@@ -1,15 +1,10 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useInView } from 'react-intersection-observer';
-
-const STATS = [
-  { label: "Destinations Listed", value: 450, suffix: "+" },
-  { label: "Happy Travelers", value: 12000, suffix: "+" },
-  { label: "Average Rating", value: 4.8, suffix: "/5", isFloat: true },
-  { label: "AI Chats Answered", value: 50000, suffix: "+" }
-];
+import { useQuery } from '@tanstack/react-query';
+import { getPackages } from '@/lib/api/packages';
 
 function Counter({ value, isFloat = false }: { value: number, isFloat?: boolean }) {
   const [count, setCount] = useState(0);
@@ -42,6 +37,20 @@ function Counter({ value, isFloat = false }: { value: number, isFloat?: boolean 
 }
 
 export function StatsBand() {
+  const { data } = useQuery({
+    queryKey: ['packagesCount'],
+    queryFn: () => getPackages({ limit: 1 }),
+  });
+
+  const totalPackages = data?.total || 450; // fallback if api fails
+
+  const STATS = useMemo(() => [
+    { label: "Destinations Listed", value: totalPackages, suffix: "+" },
+    { label: "Happy Travelers", value: 12000, suffix: "+" },
+    { label: "Average Rating", value: 4.8, suffix: "/5", isFloat: true },
+    { label: "AI Chats Answered", value: 50000, suffix: "+" }
+  ], [totalPackages]);
+
   return (
     <section className="py-20 bg-[var(--color-primary)] text-white relative overflow-hidden">
       {/* Background pattern */}
@@ -51,7 +60,7 @@ export function StatsBand() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4 text-center divide-x-0 md:divide-x divide-white/20">
           {STATS.map((stat, idx) => (
             <motion.div 
-              key={idx}
+              key={`${stat.label}-${stat.value}`} // Force re-render if value changes
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
