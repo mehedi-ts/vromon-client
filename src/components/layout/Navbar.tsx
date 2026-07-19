@@ -18,8 +18,8 @@ export function Navbar() {
   const loggedInLinks = [
     { name: 'Explore', href: '/explore' },
     { name: 'Chat Assistant', href: '/chat' },
-    { name: 'Add Package', href: '/packages/new' },
-    { name: 'Manage Packages', href: '/packages/manage' },
+    { name: 'Add Package', href: '/items/add' },
+    { name: 'Manage Packages', href: '/items/manage' },
     { name: 'Dashboard/Profile', href: '/profile' },
   ];
 

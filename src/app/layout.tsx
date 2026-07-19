@@ -4,6 +4,8 @@ import "./globals.css";
 import Providers from "./providers";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { ChatProvider } from "@/components/chat/ChatContext";
+import { ChatWidget } from "@/components/chat/ChatWidget";
 
 const inter = Inter({
   variable: "--font-body",
@@ -31,11 +33,14 @@ export default function RootLayout({
         className={`${inter.variable} ${sora.variable} antialiased min-h-screen flex flex-col`}
       >
         <Providers>
-          <Navbar />
-          <main className="flex-1">
-            {children}
-          </main>
-          <Footer />
+          <ChatProvider>
+            <Navbar />
+            <main className="flex-1">
+              {children}
+            </main>
+            <Footer />
+            <ChatWidget />
+          </ChatProvider>
         </Providers>
       </body>
     </html>
