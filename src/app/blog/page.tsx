@@ -49,9 +49,14 @@ export default async function BlogListPage() {
                       {blog.title}
                     </Link>
                   </h2>
-                  <p className="text-gray-600 mb-6 flex-1 line-clamp-4">
+                  <p className="text-gray-600 mb-4 flex-1 line-clamp-4">
                     {blog.excerpt}
                   </p>
+                  <div className="mb-4">
+                    <Link href={`/blog/${blog._id}`} className="text-[var(--color-primary)] font-medium text-sm hover:underline inline-flex items-center gap-1">
+                      Read details &rarr;
+                    </Link>
+                  </div>
                   
                   <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between text-sm text-gray-500">
                     <div className="flex items-center gap-1.5 truncate pr-2">

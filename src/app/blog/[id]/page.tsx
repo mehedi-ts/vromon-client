@@ -2,11 +2,39 @@ import Link from 'next/link';
 import { getBlogByIdServer } from '@/lib/api/blogs.server';
 import { ArrowLeft, Calendar, User } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { Metadata } from 'next';
 
 export const revalidate = 0;
 
-export default async function SingleBlogPage({ params }: { params: { id: string } }) {
-  const res = await getBlogByIdServer(params.id).catch(() => null);
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const res = await getBlogByIdServer(id).catch(() => null);
+  const blog = res?.data;
+  
+  if (!blog) {
+    return {
+      title: 'Blog Not Found | Vromon AI',
+    };
+  }
+  
+  const excerpt = blog.description ? blog.description.substring(0, 160) + '...' : '';
+  
+  return {
+    title: `${blog.title} | Vromon AI`,
+    description: excerpt,
+    openGraph: {
+      title: blog.title,
+      description: excerpt,
+      type: 'article',
+      publishedTime: blog.createdAt,
+      authors: [blog.authorEmail.split('@')[0]],
+    }
+  };
+}
+
+export default async function SingleBlogPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const res = await getBlogByIdServer(id).catch(() => null);
   
   if (!res || !res.success || !res.data) {
     return (
