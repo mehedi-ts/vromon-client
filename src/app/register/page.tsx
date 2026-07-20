@@ -18,6 +18,14 @@ const registerSchema = z.object({
   message: "Passwords don't match",
   path: ["confirmPassword"],
 });
+const handelGoogle = async() => {
+  const data = await authClient.signIn.social({
+    provider: "google",
+  });
+
+  
+}
+
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
@@ -196,11 +204,12 @@ export default function RegisterPage() {
 
           <div className="mt-6">
             <button 
-              onClick={() => console.log('Google register clicked')}
+              type='button'
+              onClick={handelGoogle}
               className="w-full bg-white border border-gray-200 text-gray-700 font-medium py-3 px-4 rounded-[var(--radius-button)] hover:bg-gray-50 transition-colors flex items-center justify-center gap-3 shadow-sm"
             >
               <Globe className="w-5 h-5 text-blue-500" />
-              Google
+              Continue with Google
             </button>
           </div>
 

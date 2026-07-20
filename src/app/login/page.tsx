@@ -13,6 +13,14 @@ const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   password: z.string().min(1, 'Password is required'),
 });
+const handelGoogle = async() => {
+  const data = await authClient.signIn.social({
+    provider: "google",
+  });
+
+  console.log("done babu")
+}
+
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
@@ -120,7 +128,8 @@ export default function LoginPage() {
 
           <div className="mt-6 space-y-3">
             <button 
-              onClick={() => console.log('Google login clicked')}
+              type='button'
+              onClick={handelGoogle}
               className="w-full bg-white border border-gray-200 text-gray-700 font-medium py-3 px-4 rounded-[var(--radius-button)] hover:bg-gray-50 transition-colors flex items-center justify-center gap-3 shadow-sm"
             >
               <Globe className="w-5 h-5 text-blue-500" />
