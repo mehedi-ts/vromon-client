@@ -64,7 +64,7 @@ export function Navbar() {
   { name: 'Home', href: '/' },
     { name: 'Explore', href: '/explore' },
     { name: 'Blog', href: '/blog' },
-    { name: 'Chat Assistant', href: '/chat' },
+    // { name: 'Chat Assistant', href: '/chat' },
     { name: 'About', href: '/about' },
     // { name: 'FAQ', href: '/faq' },
     { name: 'Contact', href: '/contact' },
@@ -113,7 +113,7 @@ export function Navbar() {
             <div className="relative ml-4" ref={dropdownRef}>
               <button 
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center gap-2 hover:bg-gray-100 p-1.5 rounded-full transition-colors"
+                className="flex cursor-pointer items-center gap-2 hover:bg-gray-100 p-1.5 rounded-full transition-colors"
               >
                 {user.image ? (
                   <img src={user.image} alt={user.name || 'User'} className="w-8 h-8 rounded-full object-cover border border-gray-200" />
@@ -121,7 +121,8 @@ export function Navbar() {
                   <div className="w-8 h-8 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center font-bold text-sm">
                     {getAvatarInitials(user.name)}
                   </div>
-                )}
+                  )}
+                   <p className="text-bold">{user.name}</p>
                 <ChevronDown className="w-4 h-4 text-gray-500" />
               </button>
               
@@ -132,10 +133,7 @@ export function Navbar() {
                     <p className="text-sm font-semibold text-gray-800 truncate">{user.name}</p>
                     <p className="text-xs text-gray-500 truncate">{user.email}</p>
                   </div>
-                  <Link href="/profile" className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-                    <UserIcon className="w-4 h-4" />
-                    Profile
-                  </Link>
+                  
                   <Link href="/items/add" className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                     <PlusCircle className="w-4 h-4" />
                     Add Package
