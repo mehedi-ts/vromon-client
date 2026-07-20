@@ -52,10 +52,11 @@ export function Navbar() {
   };
 
   const loggedOutLinks = [
+    { name: 'Home', href: '/' },
     { name: 'Explore', href: '/explore' },
     { name: 'Blog', href: '/blog' },
     { name: 'About', href: '/about' },
-    { name: 'FAQ', href: '/faq' },
+    // { name: 'FAQ', href: '/faq' },
     { name: 'Contact', href: '/contact' },
   ];
 
