@@ -6,13 +6,14 @@ const BASE_URL =
 
 interface FetchOptions extends RequestInit {
   requireAuth?: boolean;
+  rawResponse?: boolean;
 }
 
 export async function apiClient<T>(
   endpoint: string,
   options: FetchOptions = {}
 ): Promise<T> {
-  const { requireAuth = false, headers, ...customOptions } = options;
+  const { requireAuth = false, rawResponse = false, headers, ...customOptions } = options;
 
   const authHeaders: HeadersInit = {};
 
@@ -37,6 +38,10 @@ export async function apiClient<T>(
   };
 
   const response = await fetch(`${BASE_URL}${endpoint}`, config);
+
+  if (rawResponse) {
+    return response as unknown as T;
+  }
 
   let data: unknown;
 

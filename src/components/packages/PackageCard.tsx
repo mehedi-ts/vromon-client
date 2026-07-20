@@ -11,13 +11,13 @@ export function PackageCard({ pkg }: PackageCardProps) {
     <div className="bg-white rounded-[var(--radius-card)] overflow-hidden shadow-sm hover:shadow-md transition-shadow group flex flex-col h-full border border-gray-100">
       <div className="relative h-48 overflow-hidden bg-gray-200">
         <img 
-          src={pkg.images[0]} 
+          src={pkg.images?.[0] || '/placeholder.jpg'} 
           alt={pkg.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
         <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-[var(--radius-button)] text-sm font-bold flex items-center gap-1 shadow-sm">
           <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-          {pkg.rating.toFixed(1)}
+          {(pkg.rating || 0).toFixed(1)}
         </div>
       </div>
 
@@ -34,13 +34,13 @@ export function PackageCard({ pkg }: PackageCardProps) {
           <div>
             <span className="text-xs text-gray-500 block">Starting from</span>
             <span className="font-bold text-[var(--color-primary)] text-lg">
-              ৳{pkg.price.toLocaleString()}
+              ৳{(pkg.price || 0).toLocaleString()}
             </span>
           </div>
           <div className="flex flex-col items-end">
             <div className="flex items-center gap-1 text-gray-500 text-sm mb-1">
               <Clock className="w-4 h-4" />
-              {pkg.durationDays} Days
+              {pkg.durationDays || 0} Days
             </div>
           </div>
         </div>
