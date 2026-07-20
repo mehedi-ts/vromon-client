@@ -17,6 +17,10 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify(body),
     });
 
+    if (!response.ok) {
+      console.error(`Backend returned ${response.status} for /api/chat/message`);
+    }
+
     return new Response(response.body, {
       status: response.status,
       headers: response.headers,

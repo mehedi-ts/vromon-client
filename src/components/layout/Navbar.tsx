@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Menu, X, Compass, User as UserIcon, LogOut, ChevronDown } from 'lucide-react';
+import { Menu, X, Compass, User as UserIcon, LogOut, ChevronDown, PlusCircle, Package } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getCurrentUser, authClient } from '@/lib/auth-client';
 
@@ -17,15 +17,26 @@ export function Navbar() {
   const { user, isPending } = getCurrentUser();
   const isLoggedIn = !!user;
 
-  // Close dropdown on outside click
+  // Close dropdown on outside click and Escape key
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setDropdownOpen(false);
       }
     }
+    
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setDropdownOpen(false);
+      }
+    }
+
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   // Close mobile menu on route change
@@ -43,13 +54,16 @@ export function Navbar() {
   const loggedOutLinks = [
     { name: 'Explore', href: '/explore' },
     { name: 'About', href: '/about' },
+    { name: 'FAQ', href: '/faq' },
+    { name: 'Contact', href: '/contact' },
   ];
 
   const loggedInLinks = [
     { name: 'Explore', href: '/explore' },
     { name: 'Chat Assistant', href: '/chat' },
-    { name: 'Add Package', href: '/items/add' },
-    { name: 'Manage Packages', href: '/items/manage' },
+    { name: 'About', href: '/about' },
+    { name: 'FAQ', href: '/faq' },
+    { name: 'Contact', href: '/contact' },
   ];
 
   const links = isLoggedIn ? loggedInLinks : loggedOutLinks;
@@ -109,7 +123,7 @@ export function Navbar() {
               
               {/* Dropdown Menu */}
               {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 overflow-hidden flex flex-col animate-in slide-in-from-top-2 opacity-0 fade-in duration-200">
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 overflow-hidden flex flex-col z-50">
                   <div className="px-4 py-3 border-b border-gray-100">
                     <p className="text-sm font-semibold text-gray-800 truncate">{user.name}</p>
                     <p className="text-xs text-gray-500 truncate">{user.email}</p>
@@ -117,6 +131,14 @@ export function Navbar() {
                   <Link href="/profile" className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                     <UserIcon className="w-4 h-4" />
                     Profile
+                  </Link>
+                  <Link href="/items/add" className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                    <PlusCircle className="w-4 h-4" />
+                    Add Package
+                  </Link>
+                  <Link href="/items/manage" className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                    <Package className="w-4 h-4" />
+                    Manage Packages
                   </Link>
                   <button 
                     onClick={handleLogout}
@@ -191,9 +213,17 @@ export function Navbar() {
               );
             })}
             {isLoggedIn && (
-              <Link href="/profile" className="px-6 py-3 font-medium text-[var(--color-text-main)] hover:bg-gray-50 transition-colors">
-                Profile
-              </Link>
+              <>
+                <Link href="/profile" className="px-6 py-3 font-medium text-[var(--color-text-main)] hover:bg-gray-50 transition-colors">
+                  Profile
+                </Link>
+                <Link href="/items/add" className="px-6 py-3 font-medium text-[var(--color-text-main)] hover:bg-gray-50 transition-colors">
+                  Add Package
+                </Link>
+                <Link href="/items/manage" className="px-6 py-3 font-medium text-[var(--color-text-main)] hover:bg-gray-50 transition-colors">
+                  Manage Packages
+                </Link>
+              </>
             )}
           </div>
           

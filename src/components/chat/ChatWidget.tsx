@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { MessageSquare, X, Send, Mic, Sparkles } from 'lucide-react';
 import { useChat } from './ChatContext';
 import { getChatHistory } from '@/lib/api/chat';
+import { getCurrentUser } from '@/lib/auth-client';
 
 
 function ChatWidgetInner() {
@@ -12,6 +13,9 @@ function ChatWidgetInner() {
   const searchParams = useSearchParams();
   const paramsPackageId = searchParams.get('packageId');
   const paramsTitle = searchParams.get('title');
+
+  const { user, isPending } = getCurrentUser();
+  const isLoggedIn = !!user;
 
   const [messages, setMessages] = useState<{ role: 'user' | 'assistant', content: string }[]>([]);
   const [input, setInput] = useState('');
@@ -68,7 +72,19 @@ function ChatWidgetInner() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: text, packageId: contextPackageId || undefined })
       });
-      if (!response.ok) throw new Error('Failed to fetch');
+      if (response.status === 401) {
+        setMessages(prev => [
+          ...prev, 
+          { role: 'assistant', content: 'You must be logged in to use the chat. Please log in first.' }
+        ]);
+        setIsLoading(false);
+        return;
+      }
+      
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Failed to fetch: ${response.status} ${errText}`);
+      }
       
       const reader = response.body?.getReader();
       const decoder = new TextDecoder('utf-8');
@@ -188,20 +204,30 @@ function ChatWidgetInner() {
                 type="text" 
                 value={input}
                 onChange={e => setInput(e.target.value)}
-                placeholder="Ask about your next trip..."
-                className="flex-1 bg-gray-100 border-none rounded-full py-3 pl-4 pr-12 focus:ring-2 focus:ring-[var(--color-primary)] outline-none text-sm"
+                placeholder={isLoggedIn ? "Ask about your next trip..." : "Login required to use the AI assistant."}
+                disabled={!isLoggedIn || isLoading}
+                className={`flex-1 bg-gray-100 border-none rounded-full py-3 pl-4 pr-12 focus:ring-2 focus:ring-[var(--color-primary)] outline-none text-sm ${!isLoggedIn ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
-              <button type="button" className="absolute right-14 text-gray-400 hover:text-[var(--color-primary)]">
-                <Mic className="w-5 h-5" />
-              </button>
+              {isLoggedIn && (
+                <button type="button" className="absolute right-14 text-gray-400 hover:text-[var(--color-primary)]">
+                  <Mic className="w-5 h-5" />
+                </button>
+              )}
               <button 
                 type="submit"
-                disabled={!input.trim() || isLoading}
-                className="w-11 h-11 bg-[var(--color-primary)] text-white rounded-full flex items-center justify-center hover:opacity-90 disabled:opacity-50 transition-opacity shrink-0"
+                disabled={!isLoggedIn || !input.trim() || isLoading}
+                className="w-11 h-11 bg-[var(--color-primary)] text-white rounded-full flex items-center justify-center hover:opacity-90 disabled:opacity-50 transition-opacity shrink-0 disabled:cursor-not-allowed"
               >
                 <Send className="w-5 h-5" />
               </button>
             </form>
+            {!isLoggedIn && (
+              <div className="mt-3 text-center">
+                <a href="/login" className="text-sm text-[var(--color-primary)] font-medium hover:underline">
+                  Log in to start chatting
+                </a>
+              </div>
+            )}
           </div>
         </div>
       )}

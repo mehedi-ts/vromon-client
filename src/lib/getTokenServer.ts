@@ -7,9 +7,12 @@ import { auth } from "./auth";
 export async function getTokenServer() {
   const requestHeaders = await headers();
 
-  const { token } = await auth.api.getToken({
-    headers: requestHeaders,
-  });
-
-  return token;
+  try {
+    const res = await auth.api.getToken({
+      headers: requestHeaders,
+    });
+    return res?.token || null;
+  } catch (err) {
+    return null;
+  }
 }
