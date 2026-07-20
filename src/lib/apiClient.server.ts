@@ -18,9 +18,11 @@ export async function apiClientServer<T>(
 
   if (requireAuth) {
     const token = await getTokenServer();
+    console.log("meeee",token)
 
     if (!token) {
       throw new Error("Authentication token not found on the server");
+      console.log("nai re vai")
     }
 
     authHeaders.Authorization = `Bearer ${token}`;

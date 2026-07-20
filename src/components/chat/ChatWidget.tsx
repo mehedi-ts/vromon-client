@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { MessageSquare, X, Send, Mic, Sparkles } from 'lucide-react';
 import { useChat } from './ChatContext';
 import { getChatHistory } from '@/lib/api/chat';
-import { sendChatMessageStream } from '@/lib/action/chat';
+
 
 function ChatWidgetInner() {
   const { isOpen, closeChat, contextPackageId, openChat } = useChat();
@@ -63,7 +63,11 @@ function ChatWidgetInner() {
     setIsLoading(true);
 
     try {
-      const response = await sendChatMessageStream(text, contextPackageId || undefined);
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, packageId: contextPackageId || undefined })
+      });
       if (!response.ok) throw new Error('Failed to fetch');
       
       const reader = response.body?.getReader();

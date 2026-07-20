@@ -1,4 +1,4 @@
-import { apiClient } from '../apiClient';
+import { apiClientServer } from '../apiClient.server';
 import { Package } from '../schemas';
 
 export interface PackagesResponse {
@@ -37,13 +37,13 @@ export async function getPackages(filters: PackageFilters = {}): Promise<Package
   });
 
   const queryString = params.toString() ? `?${params.toString()}` : '';
-  return apiClient<PackagesResponse>(`/api/packages${queryString}`);
+  return apiClientServer<PackagesResponse>(`/api/packages${queryString}`);
 }
 
 export async function getPackageById(id: string): Promise<PackageResponse> {
-  return apiClient<PackageResponse>(`/api/packages/${id}`);
+  return apiClientServer<PackageResponse>(`/api/packages/${id}`);
 }
 
 export async function getMyPackages(): Promise<PackagesResponse> {
-  return apiClient<PackagesResponse>('/api/packages/mine', { requireAuth: true });
+  return apiClientServer<PackagesResponse>('/api/packages/mine', { requireAuth: true });
 }

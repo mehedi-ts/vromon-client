@@ -7,14 +7,23 @@ import { Testimonials } from "@/components/home/Testimonials";
 import { Newsletter } from "@/components/home/Newsletter";
 import { FAQ } from "@/components/home/FAQ";
 
-export default function Home() {
+import { getPackages } from "@/lib/api/packages";
+
+export default async function Home() {
+  const [statsRes, featuredRes] = await Promise.all([
+    getPackages({ limit: 1 }).catch(() => null),
+    getPackages({ limit: 4, sort: 'rating' }).catch(() => null)
+  ]);
+  const totalPackages = statsRes?.total || 450;
+  const featuredPackages = featuredRes?.data || [];
+
   return (
     <>
       <Hero />
-      <FeaturedDestinations />
+      <FeaturedDestinations packages={featuredPackages} />
       <WhyVromonAI />
       <PopularCategories />
-      <StatsBand />
+      <StatsBand totalPackages={totalPackages} />
       <Testimonials />
       <Newsletter />
       <FAQ />

@@ -1,17 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useQuery } from '@tanstack/react-query';
-import { getPackages } from '@/lib/api/packages';
-import { PackageCard, PackageCardSkeleton } from '@/components/packages/PackageCard';
+import { PackageCard } from '@/components/packages/PackageCard';
 
-export function FeaturedDestinations() {
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ['featuredPackages'],
-    queryFn: () => getPackages({ limit: 4, sort: 'rating' }),
-  });
-
-  const packages = data?.data || [];
+export function FeaturedDestinations({ packages = [] }: { packages?: any[] }) {
 
   return (
     <section className="py-24 bg-[var(--color-neutral-bg)]">
@@ -34,9 +26,7 @@ export function FeaturedDestinations() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {isLoading ? (
-            Array.from({ length: 4 }).map((_, i) => <PackageCardSkeleton key={i} />)
-          ) : isError || packages.length === 0 ? (
+          {packages.length === 0 ? (
             <div className="col-span-4 text-center py-12 text-gray-500">
               Check back soon for amazing featured packages.
             </div>

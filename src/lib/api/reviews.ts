@@ -1,4 +1,4 @@
-import { apiClient } from '../apiClient';
+import { apiClientServer } from '../apiClient.server';
 import { Review } from '../schemas';
 
 export interface ReviewsResponse {
@@ -7,5 +7,5 @@ export interface ReviewsResponse {
 }
 
 export async function getReviews(packageId: string): Promise<ReviewsResponse> {
-  return apiClient<ReviewsResponse>(`/api/reviews/${packageId}`);
+  return apiClientServer<ReviewsResponse>(`/api/reviews/${packageId}`);
 }

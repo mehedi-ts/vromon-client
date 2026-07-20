@@ -1,8 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { useMutation } from '@tanstack/react-query';
 import { Plus, X, UploadCloud, AlertCircle } from 'lucide-react';
 import { createPackage } from '@/lib/action/packages';
 import { PackageCard } from '@/components/packages/PackageCard';
@@ -15,6 +14,7 @@ export default function AddPackagePage() {
   const router = useRouter();
   
   const { user, isPending } = getCurrentUser();
+  console.log(user)
 
   // Form State
   const [formData, setFormData] = useState({
@@ -31,18 +31,7 @@ export default function AddPackagePage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const mutation = useMutation({
-    mutationFn: createPackage,
-    onSuccess: () => {
-      setSuccess('Package created successfully!');
-      setTimeout(() => {
-        router.push('/items/manage');
-      }, 2000);
-    },
-    onError: () => {
-      setError('Failed to create package. Please try again.');
-    }
-  });
+  const [isPendingMutation, startTransition] = useTransition();
 
   if (isPending) {
     return (
@@ -102,7 +91,17 @@ export default function AddPackagePage() {
       itinerary: [], // simplify for now or add itinerary builder later
     };
 
-    mutation.mutate(payload as any);
+    startTransition(async () => {
+      const res = await createPackage(payload as any);
+      if (res.success) {
+        setSuccess('Package created successfully!');
+        setTimeout(() => {
+          router.push('/items/manage');
+        }, 2000);
+      } else {
+        setError(res.message || 'Failed to create package. Please try again.');
+      }
+    });
   };
 
   // Preview Object
@@ -234,11 +233,11 @@ export default function AddPackagePage() {
               <div className="pt-6 border-t border-gray-100">
                 <button 
                   type="submit" 
-                  disabled={mutation.isPending}
+                  disabled={isPendingMutation}
                   className="w-full md:w-auto bg-[var(--color-primary)] text-white px-8 py-3 rounded-[var(--radius-button)] font-bold hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   <UploadCloud className="w-5 h-5" />
-                  {mutation.isPending ? 'Saving...' : 'Create Package'}
+                  {isPendingMutation ? 'Saving...' : 'Create Package'}
                 </button>
               </div>
 

@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useInfiniteQuery } from '@tanstack/react-query';
+
 import { useInView } from 'react-intersection-observer';
 import { Search, SlidersHorizontal, ChevronDown } from 'lucide-react';
-import { getPackages, PackageFilters } from '@/lib/api/packages';
+import { PackageFilters, PackagesResponse } from '@/lib/api/packages';
+import { apiClient } from '@/lib/apiClient';
 import { useDebounce } from '@/hooks/use-debounce';
 import { PackageCard, PackageCardSkeleton } from '@/components/packages/PackageCard';
 
@@ -15,6 +16,15 @@ const SORTS = [
   { label: 'Price: High to Low', value: 'price-desc' },
   { label: 'Highest Rated', value: 'rating' }
 ];
+
+async function getPackagesClient(filters: PackageFilters = {}): Promise<PackagesResponse> {
+  const params = new URLSearchParams();
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== '') params.append(key, String(value));
+  });
+  const queryString = params.toString() ? `?${params.toString()}` : '';
+  return apiClient<PackagesResponse>(`/api/packages${queryString}`);
+}
 
 export default function ExplorePage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -30,31 +40,46 @@ export default function ExplorePage() {
     minRating: ''
   });
 
+  const [packages, setPackages] = useState<any[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [hasNextPage, setHasNextPage] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isFetchingNextPage, setIsFetchingNextPage] = useState(false);
+
   const { ref, inView } = useInView();
 
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-    isError
-  } = useInfiniteQuery({
-    queryKey: ['packages', { ...filters, search: debouncedSearch }],
-    queryFn: ({ pageParam = 1 }) => getPackages({ ...filters, search: debouncedSearch, page: pageParam as number, limit: 12 }),
-    getNextPageParam: (lastPage, allPages) => {
-      const maxPages = Math.ceil(lastPage.total / lastPage.limit);
-      const nextPage = lastPage.page + 1;
-      return nextPage <= maxPages ? nextPage : undefined;
-    },
-    initialPageParam: 1,
-  });
+  const loadPackages = async (pageNum: number, isReset: boolean) => {
+    if (pageNum === 1) setIsLoading(true);
+    else setIsFetchingNextPage(true);
+
+    try {
+      const res = await getPackagesClient({ ...filters, search: debouncedSearch, page: pageNum, limit: 12 });
+      if (res.success) {
+        setPackages(prev => isReset ? res.data : [...prev, ...res.data]);
+        setTotalCount(res.total);
+        
+        const maxPages = Math.ceil(res.total / res.limit);
+        setHasNextPage(pageNum < maxPages);
+        setPage(pageNum);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+      setIsFetchingNextPage(false);
+    }
+  };
 
   useEffect(() => {
-    if (inView && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
+    loadPackages(1, true);
+  }, [filters, debouncedSearch]);
+
+  useEffect(() => {
+    if (inView && hasNextPage && !isLoading && !isFetchingNextPage) {
+      loadPackages(page + 1, false);
     }
-  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, [inView, hasNextPage, isLoading, isFetchingNextPage, page]);
 
   const handleFilterChange = (key: keyof PackageFilters, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -65,8 +90,7 @@ export default function ExplorePage() {
     setFilters({ sort: 'newest', category: '', minPrice: '', maxPrice: '', minDuration: '', maxDuration: '', minRating: '' });
   };
 
-  const packages = data?.pages.flatMap(page => page.data) || [];
-  const totalCount = data?.pages[0]?.total || 0;
+
 
   return (
     <div className="bg-[var(--color-neutral-bg)] min-h-screen py-8">

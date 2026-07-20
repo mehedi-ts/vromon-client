@@ -3,8 +3,6 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState, useMemo } from 'react';
 import { useInView } from 'react-intersection-observer';
-import { useQuery } from '@tanstack/react-query';
-import { getPackages } from '@/lib/api/packages';
 
 function Counter({ value, isFloat = false }: { value: number, isFloat?: boolean }) {
   const [count, setCount] = useState(0);
@@ -36,13 +34,7 @@ function Counter({ value, isFloat = false }: { value: number, isFloat?: boolean 
   );
 }
 
-export function StatsBand() {
-  const { data } = useQuery({
-    queryKey: ['packagesCount'],
-    queryFn: () => getPackages({ limit: 1 }),
-  });
-
-  const totalPackages = data?.total || 450; // fallback if api fails
+export function StatsBand({ totalPackages = 450 }: { totalPackages?: number }) {
 
   const STATS = useMemo(() => [
     { label: "Destinations Listed", value: totalPackages, suffix: "+" },

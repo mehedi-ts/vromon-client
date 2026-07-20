@@ -10,16 +10,24 @@ export interface ActionResponse {
 }
 
 export async function createPackage(data: Omit<Package, '_id' | 'ownerId' | 'createdAt'>): Promise<ActionResponse> {
-  return apiClientServer<ActionResponse>('/api/packages', {
-    method: 'POST',
-    body: JSON.stringify(data),
-    requireAuth: true,
-  });
+  try {
+    return await apiClientServer<ActionResponse>('/api/packages', {
+      method: 'POST',
+      body: JSON.stringify(data),
+      requireAuth: true,
+    });
+  } catch (error: any) {
+    return { success: false, message: error.message || 'Failed to create package' };
+  }
 }
 
 export async function deletePackage(id: string): Promise<ActionResponse> {
-  return apiClientServer<ActionResponse>(`/api/packages/${id}`, {
-    method: 'DELETE',
-    requireAuth: true,
-  });
+  try {
+    return await apiClientServer<ActionResponse>(`/api/packages/${id}`, {
+      method: 'DELETE',
+      requireAuth: true,
+    });
+  } catch (error: any) {
+    return { success: false, message: error.message || 'Failed to delete package' };
+  }
 }
