@@ -6,12 +6,13 @@ export async function sendChatMessageStream(message: string, packageId?: string)
     'Content-Type': 'application/json',
   };
   if (token) {
-    headers['Authorization'] = "Bearer ${token}";
+    headers['Authorization'] = `Bearer ${token}`;
   }
 
-  return fetch("/api/chat/message", {
+  return fetch(`${BASE_URL}/api/chat/message`, {
     method: 'POST',
     headers,
+    credentials: 'include',
     body: JSON.stringify({ message, packageId }),
   });
 }

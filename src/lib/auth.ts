@@ -12,5 +12,30 @@ export const auth = betterAuth({
   }),
     emailAndPassword: {    
         enabled: true
-    } ,
+  },
+  session: {
+    cookieCache: {
+      enabled: true,
+      strategy: "jwt",
+      maxAge:7*24*60*60
+
+      }
+    },
+  plugins: [
+      jwt()
+    ]
 });
+
+import { headers } from 'next/headers';
+import { jwt } from "better-auth/plugins";
+
+export const getServerSession = async () => {
+  return await auth.api.getSession({
+    headers: await headers()
+  });
+};
+
+export const getServerUser = async () => {
+  const session = await getServerSession();
+  return session?.user || null;
+};

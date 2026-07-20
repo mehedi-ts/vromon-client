@@ -7,14 +7,14 @@ import { Plus, X, UploadCloud, AlertCircle } from 'lucide-react';
 import { createPackage } from '@/lib/action/packages';
 import { PackageCard } from '@/components/packages/PackageCard';
 import { Package } from '@/lib/schemas';
+import { getCurrentUser } from '@/lib/auth-client';
 
 const CATEGORIES = ['Hill', 'Beach', 'Adventure', 'Heritage', 'City'];
 
 export default function AddPackagePage() {
   const router = useRouter();
   
-  // Stubbed Auth
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const { user, isPending } = getCurrentUser();
 
   // Form State
   const [formData, setFormData] = useState({
@@ -44,17 +44,26 @@ export default function AddPackagePage() {
     }
   });
 
-  if (!isLoggedIn) {
+  if (isPending) {
+    return (
+      <div className="min-h-[80vh] flex flex-col items-center justify-center bg-[var(--color-neutral-bg)]">
+        <div className="w-12 h-12 border-4 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin"></div>
+        <p className="mt-4 text-gray-500 font-medium">Verifying session...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
     return (
       <div className="min-h-[80vh] flex flex-col items-center justify-center bg-[var(--color-neutral-bg)]">
         <AlertCircle className="w-16 h-16 text-gray-400 mb-4" />
         <h2 className="text-2xl font-bold text-gray-700 mb-2">Access Denied</h2>
         <p className="text-gray-500 mb-6">You must be logged in to add a new package.</p>
         <button 
-          onClick={() => setIsLoggedIn(true)}
+          onClick={() => router.push('/login')}
           className="bg-[var(--color-primary)] text-white px-8 py-3 rounded-[var(--radius-button)] font-medium hover:opacity-90 transition-opacity"
         >
-          Simulate Login
+          Go to Login
         </button>
       </div>
     );
@@ -109,7 +118,7 @@ export default function AddPackagePage() {
     images: images[0] ? [images[0]] : ['https://images.unsplash.com/photo-1596895111956-bf570531846c?auto=format&fit=crop&w=800&q=80'],
     rating: 5.0,
     itinerary: [],
-    ownerId: 'me',
+    ownerId: user.id,
     createdAt: new Date().toISOString()
   };
 
@@ -121,8 +130,6 @@ export default function AddPackagePage() {
             <h1 className="text-3xl font-heading font-bold text-[var(--color-text-main)]">Add New Package</h1>
             <p className="text-gray-500">Create a new travel destination package for users to explore.</p>
           </div>
-          {/* Developer Toggle */}
-          <button onClick={() => setIsLoggedIn(false)} className="text-xs text-gray-400 underline">Logout (Stub)</button>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-12">

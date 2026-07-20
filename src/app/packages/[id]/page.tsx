@@ -8,6 +8,7 @@ import { getPackageById } from '@/lib/api/packages';
 import { getReviews } from '@/lib/api/reviews';
 import { addReview } from '@/lib/action/reviews';
 import { PackageCard } from '@/components/packages/PackageCard';
+import { getCurrentUser } from '@/lib/auth-client';
 
 export default function PackageDetailsPage() {
   const params = useParams();
@@ -21,8 +22,8 @@ export default function PackageDetailsPage() {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
   
-  // Stubbed Auth
-  const isLoggedIn = false; 
+  const { user } = getCurrentUser();
+  const isLoggedIn = !!user;
 
   const { data: packageData, isLoading: isPackageLoading } = useQuery({
     queryKey: ['package', id],

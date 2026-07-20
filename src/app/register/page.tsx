@@ -2,10 +2,12 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Mail, Lock, User, Globe, Check } from 'lucide-react';
+import { Mail, Lock, User, Globe, Check, AlertCircle } from 'lucide-react';
+import { authClient } from '@/lib/auth-client';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -24,7 +26,9 @@ export default function RegisterPage() {
     resolver: zodResolver(registerSchema),
   });
   
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
   const password = watch('password') || '';
 
   // Calculate password strength
@@ -55,12 +59,25 @@ export default function RegisterPage() {
     return 'Strong';
   };
 
-  const onSubmit = (data: RegisterFormValues) => {
+  const onSubmit = async (data: RegisterFormValues) => {
     setIsSubmitting(true);
-    console.log('Register form submitted:', data);
-    setTimeout(() => {
+    setErrorMsg('');
+    try {
+      const { error } = await authClient.signUp.email({
+        email: data.email,
+        password: data.password,
+        name: data.name,
+      });
+      if (error) {
+        setErrorMsg(error.message || 'An error occurred during registration.');
+      } else {
+        router.push('/explore');
+      }
+    } catch (err) {
+      setErrorMsg('A network error occurred. Please try again.');
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -72,6 +89,13 @@ export default function RegisterPage() {
             <h1 className="text-4xl font-heading font-bold text-[var(--color-text-main)] mb-2">Create Account</h1>
             <p className="text-gray-500">Join Vromon AI and start planning your perfect trip.</p>
           </div>
+          
+          {errorMsg && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-[var(--radius-card)] flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 flex-shrink-0" />
+              <p className="text-sm font-medium">{errorMsg}</p>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>

@@ -1,14 +1,44 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { Menu, X, Compass } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { Menu, X, Compass, User as UserIcon, LogOut, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getCurrentUser, authClient } from '@/lib/auth-client';
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  // Mock Auth State. Flip this to true to see logged-in links.
-  const isLoggedIn = false; 
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const pathname = usePathname();
+  
+  const { user, isPending } = getCurrentUser();
+  const isLoggedIn = !!user;
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setIsOpen(false);
+    setDropdownOpen(false);
+  }, [pathname]);
+
+  const handleLogout = async () => {
+    await authClient.signOut();
+    router.push('/login');
+    setIsOpen(false);
+  };
 
   const loggedOutLinks = [
     { name: 'Explore', href: '/explore' },
@@ -20,10 +50,14 @@ export function Navbar() {
     { name: 'Chat Assistant', href: '/chat' },
     { name: 'Add Package', href: '/items/add' },
     { name: 'Manage Packages', href: '/items/manage' },
-    { name: 'Dashboard/Profile', href: '/profile' },
   ];
 
   const links = isLoggedIn ? loggedInLinks : loggedOutLinks;
+
+  const getAvatarInitials = (name?: string | null) => {
+    if (!name) return 'U';
+    return name.charAt(0).toUpperCase();
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-[var(--color-neutral-bg)] bg-[var(--color-neutral-bg)]/80 backdrop-blur-md">
@@ -36,17 +70,65 @@ export function Navbar() {
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-8">
-          {links.map((link) => (
-            <Link 
-              key={link.name} 
-              href={link.href}
-              className="text-[var(--color-text-main)] hover:text-[var(--color-primary)] font-medium transition-colors"
-            >
-              {link.name}
-            </Link>
-          ))}
+          {links.map((link) => {
+            const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
+            return (
+              <Link 
+                key={link.name} 
+                href={link.href}
+                className={cn(
+                  "font-medium transition-colors hover:text-[var(--color-primary)] relative py-2",
+                  isActive ? "text-[var(--color-primary)]" : "text-[var(--color-text-main)]"
+                )}
+              >
+                {link.name}
+                {isActive && (
+                  <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[var(--color-primary)] rounded-t-md" />
+                )}
+              </Link>
+            );
+          })}
           
-          {!isLoggedIn && (
+          {isPending ? (
+            <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse ml-4"></div>
+          ) : isLoggedIn && user ? (
+            <div className="relative ml-4" ref={dropdownRef}>
+              <button 
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                className="flex items-center gap-2 hover:bg-gray-100 p-1.5 rounded-full transition-colors"
+              >
+                {user.image ? (
+                  <img src={user.image} alt={user.name || 'User'} className="w-8 h-8 rounded-full object-cover border border-gray-200" />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center font-bold text-sm">
+                    {getAvatarInitials(user.name)}
+                  </div>
+                )}
+                <ChevronDown className="w-4 h-4 text-gray-500" />
+              </button>
+              
+              {/* Dropdown Menu */}
+              {dropdownOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 overflow-hidden flex flex-col animate-in slide-in-from-top-2 opacity-0 fade-in duration-200">
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <p className="text-sm font-semibold text-gray-800 truncate">{user.name}</p>
+                    <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                  </div>
+                  <Link href="/profile" className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                    <UserIcon className="w-4 h-4" />
+                    Profile
+                  </Link>
+                  <button 
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors w-full text-left"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
             <div className="flex items-center gap-4 ml-4">
               <Link 
                 href="/login"
@@ -66,44 +148,83 @@ export function Navbar() {
 
         {/* Mobile Menu Toggle */}
         <button 
-          className="md:hidden p-2 text-[var(--color-text-main)]"
+          className="md:hidden p-2 text-[var(--color-text-main)] hover:bg-gray-100 rounded-md transition-colors"
           onClick={() => setIsOpen(!isOpen)}
         >
           {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
       </div>
 
-      {/* Mobile Nav */}
+      {/* Mobile Nav Overlay */}
       {isOpen && (
-        <div className="md:hidden absolute top-16 left-0 w-full bg-[var(--color-neutral-bg)] border-b border-gray-200 shadow-lg py-4 flex flex-col px-4 gap-4">
-          {links.map((link) => (
-            <Link 
-              key={link.name} 
-              href={link.href}
-              className="text-[var(--color-text-main)] hover:text-[var(--color-primary)] font-medium py-2 border-b border-gray-100 last:border-0"
-              onClick={() => setIsOpen(false)}
-            >
-              {link.name}
-            </Link>
-          ))}
-          {!isLoggedIn && (
-            <div className="flex flex-col gap-3 mt-2">
-              <Link 
-                href="/login"
-                className="w-full text-center border border-[var(--color-primary)] text-[var(--color-primary)] px-4 py-2 rounded-[var(--radius-button)] font-medium transition-colors"
-                onClick={() => setIsOpen(false)}
-              >
-                Login
-              </Link>
-              <Link 
-                href="/register"
-                className="w-full text-center bg-[var(--color-accent)] text-white px-4 py-2 rounded-[var(--radius-button)] font-medium transition-all shadow-sm"
-                onClick={() => setIsOpen(false)}
-              >
-                Register
-              </Link>
+        <div className="md:hidden absolute top-16 left-0 w-full bg-white border-b border-gray-200 shadow-xl flex flex-col animate-in slide-in-from-top-2">
+          {isLoggedIn && user && (
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3 bg-gray-50">
+              {user.image ? (
+                <img src={user.image} alt={user.name || 'User'} className="w-10 h-10 rounded-full object-cover border border-gray-200" />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center font-bold text-lg">
+                  {getAvatarInitials(user.name)}
+                </div>
+              )}
+              <div>
+                <p className="font-semibold text-gray-800">{user.name}</p>
+                <p className="text-sm text-gray-500">{user.email}</p>
+              </div>
             </div>
           )}
+
+          <div className="flex flex-col py-2">
+            {links.map((link) => {
+              const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
+              return (
+                <Link 
+                  key={link.name} 
+                  href={link.href}
+                  className={cn(
+                    "px-6 py-3 font-medium transition-colors",
+                    isActive ? "text-[var(--color-primary)] bg-blue-50/50" : "text-[var(--color-text-main)] hover:bg-gray-50"
+                  )}
+                >
+                  {link.name}
+                </Link>
+              );
+            })}
+            {isLoggedIn && (
+              <Link href="/profile" className="px-6 py-3 font-medium text-[var(--color-text-main)] hover:bg-gray-50 transition-colors">
+                Profile
+              </Link>
+            )}
+          </div>
+          
+          <div className="px-6 py-4 border-t border-gray-100 bg-gray-50">
+            {isPending ? (
+              <div className="w-full h-10 bg-gray-200 animate-pulse rounded-[var(--radius-button)]"></div>
+            ) : isLoggedIn ? (
+              <button 
+                onClick={handleLogout}
+                className="w-full flex items-center justify-center gap-2 border border-red-200 text-red-600 hover:bg-red-100 px-4 py-2.5 rounded-[var(--radius-button)] font-medium transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </button>
+            ) : (
+              <div className="flex flex-col gap-3">
+                <Link 
+                  href="/login"
+                  className="w-full text-center border border-[var(--color-primary)] text-[var(--color-primary)] px-4 py-2.5 rounded-[var(--radius-button)] font-medium transition-colors hover:bg-blue-50"
+                >
+                  Login
+                </Link>
+                <Link 
+                  href="/register"
+                  className="w-full text-center bg-[var(--color-accent)] text-white px-4 py-2.5 rounded-[var(--radius-button)] font-medium transition-all shadow-sm hover:opacity-90"
+                >
+                  Register
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </header>

@@ -2,10 +2,12 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Mail, Lock, ArrowRight, Globe } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Globe, AlertCircle } from 'lucide-react';
+import { authClient } from '@/lib/auth-client';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -19,14 +21,28 @@ export default function LoginPage() {
     resolver: zodResolver(loginSchema),
   });
   
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
-  const onSubmit = (data: LoginFormValues) => {
+  const onSubmit = async (data: LoginFormValues) => {
     setIsSubmitting(true);
-    console.log('Login form submitted:', data);
-    setTimeout(() => {
+    setErrorMsg('');
+    try {
+      const { error } = await authClient.signIn.email({
+        email: data.email,
+        password: data.password,
+      });
+      if (error) {
+        setErrorMsg(error.message || 'Invalid credentials.');
+      } else {
+        router.push('/explore');
+      }
+    } catch (err) {
+      setErrorMsg('A network error occurred. Please try again.');
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
 
   const handleDemoLogin = () => {
@@ -43,6 +59,13 @@ export default function LoginPage() {
             <h1 className="text-4xl font-heading font-bold text-[var(--color-text-main)] mb-2">Welcome Back</h1>
             <p className="text-gray-500">Sign in to continue planning your next adventure.</p>
           </div>
+          
+          {errorMsg && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-[var(--radius-card)] flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 flex-shrink-0" />
+              <p className="text-sm font-medium">{errorMsg}</p>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
