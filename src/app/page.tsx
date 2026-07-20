@@ -41,7 +41,7 @@ export default async function Home() {
       <CategoryChart data={categoryData} />
       <StatsBand totalPackages={totalPackages} />
       <Testimonials />
-      <Newsletter />
+      {/* <Newsletter /> */}
       <FAQ />
     </>
   );
