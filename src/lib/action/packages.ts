@@ -1,4 +1,6 @@
-import { apiClient } from '../apiClient';
+'use server';
+
+import { apiClientServer } from '../apiClient.server';
 import { Package } from '../schemas';
 
 export interface ActionResponse {
@@ -8,7 +10,7 @@ export interface ActionResponse {
 }
 
 export async function createPackage(data: Omit<Package, '_id' | 'ownerId' | 'createdAt'>): Promise<ActionResponse> {
-  return apiClient<ActionResponse>('/api/packages', {
+  return apiClientServer<ActionResponse>('/api/packages', {
     method: 'POST',
     body: JSON.stringify(data),
     requireAuth: true,
@@ -16,7 +18,7 @@ export async function createPackage(data: Omit<Package, '_id' | 'ownerId' | 'cre
 }
 
 export async function deletePackage(id: string): Promise<ActionResponse> {
-  return apiClient<ActionResponse>(`/api/packages/${id}`, {
+  return apiClientServer<ActionResponse>(`/api/packages/${id}`, {
     method: 'DELETE',
     requireAuth: true,
   });
