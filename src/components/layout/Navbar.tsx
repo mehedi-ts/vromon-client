@@ -61,11 +61,12 @@ export function Navbar() {
   ];
 
   const loggedInLinks = [
+  { name: 'Home', href: '/' },
     { name: 'Explore', href: '/explore' },
     { name: 'Blog', href: '/blog' },
     { name: 'Chat Assistant', href: '/chat' },
     { name: 'About', href: '/about' },
-    { name: 'FAQ', href: '/faq' },
+    // { name: 'FAQ', href: '/faq' },
     { name: 'Contact', href: '/contact' },
   ];
 

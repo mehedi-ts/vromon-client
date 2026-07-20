@@ -18,7 +18,7 @@ const handelGoogle = async() => {
     provider: "google",
   });
 
-  console.log("done babu")
+  
 }
 
 
@@ -145,7 +145,7 @@ export default function LoginPage() {
           </div>
 
           <p className="mt-8 text-center text-gray-600">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link href="/register" className="font-bold text-[var(--color-primary)] hover:underline">
               Create an account
             </Link>

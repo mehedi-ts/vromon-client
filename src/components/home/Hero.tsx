@@ -2,26 +2,27 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight, Search, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, Sparkles, Map } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 
 const DESTINATIONS = [
   {
     id: 1,
     name: "Cox's Bazar",
-    image: "https://images.unsplash.com/photo-1600984534125-9626359f5b24?q=80&w=2000&auto=format&fit=crop",
+    image: "https://i.ibb.co.com/7xk0PCbK/coxs-bazar-sunset-1024x461.jpg",
     subtitle: "The Longest Sea Beach in the World"
   },
   {
     id: 2,
     name: "Sajek Valley",
-    image: "https://images.unsplash.com/photo-1627838561849-041793796fc7?q=80&w=2000&auto=format&fit=crop",
+    image: "https://i.ibb.co.com/XrjZWBbz/582124497-1354066173077620-7258115305832709717-n.jpg",
     subtitle: "Above the Clouds in the Hill Tracts"
   },
   {
     id: 3,
     name: "Sylhet Tea Gardens",
-    image: "https://images.unsplash.com/photo-1594921966205-02102e3b2e35?q=80&w=2000&auto=format&fit=crop",
+    image: "https://i.ibb.co.com/fYxPMq5N/Qw-RY54-Li1-HMw-D7o-Nfof-ULc-MANs6-KOsk-Zvswqg-Fsn-YP.webp",
     subtitle: "Lush Greenery & Serene Landscapes"
   }
 ];
@@ -34,7 +35,7 @@ export function Hero() {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % DESTINATIONS.length);
-    }, 5000);
+    }, 10000);
     return () => clearInterval(timer);
   }, []);
 
@@ -53,18 +54,30 @@ export function Hero() {
       <AnimatePresence mode="wait">
         <motion.div
           key={currentIndex}
-          initial={{ opacity: 0, scale: 1.05 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 1 }}
           className="absolute inset-0"
         >
-          <div 
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url('${DESTINATIONS[currentIndex].image}')` }}
-          />
-          {/* Dark gradient overlay for text readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-gray-900/40 to-transparent" />
+          <div className="absolute inset-0 overflow-hidden">
+            <motion.div
+              initial={{ scale: 1.05 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 6, ease: "easeOut" }}
+              className="absolute inset-0"
+            >
+              <Image
+                src={DESTINATIONS[currentIndex].image}
+                alt={DESTINATIONS[currentIndex].name}
+                fill
+                priority
+                className="object-cover"
+              />
+            </motion.div>
+          </div>
+          {/* Dark overlay for text readability (50%) */}
+          <div className="absolute inset-0 bg-black/50" />
         </motion.div>
       </AnimatePresence>
 
@@ -108,14 +121,24 @@ export function Hero() {
           </button>
         </div>
 
-        {/* AI CTA */}
-        <button 
-          onClick={() => router.push('/chat')}
-          className="flex items-center gap-2 bg-[var(--color-accent)] text-white px-8 py-4 rounded-[var(--radius-button)] font-medium hover:scale-105 transition-transform shadow-md"
-        >
-          <Sparkles className="w-5 h-5" />
-          Plan My Trip with AI
-        </button>
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 items-center mt-2 w-full max-w-2xl justify-center">
+          <button 
+            onClick={() => router.push('/explore')}
+            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[var(--color-primary)] text-white px-8 py-4 rounded-[var(--radius-button)] font-medium hover:bg-opacity-90 hover:scale-105 focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] transition-all shadow-lg"
+          >
+            <Map className="w-5 h-5" />
+            Explore Destinations
+          </button>
+          
+          <button 
+            onClick={() => router.push('/chat')}
+            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-white px-8 py-4 rounded-[var(--radius-button)] font-medium hover:bg-white/20 hover:scale-105 focus:ring-2 focus:ring-offset-2 focus:ring-white/50 transition-all shadow-lg"
+          >
+            <Sparkles className="w-5 h-5 text-[var(--color-accent)]" />
+            Plan Trip with AI
+          </button>
+        </div>
       </div>
 
       {/* Navigation Arrows */}
