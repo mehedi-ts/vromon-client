@@ -53,6 +53,7 @@ export function Navbar() {
 
   const loggedOutLinks = [
     { name: 'Explore', href: '/explore' },
+    { name: 'Blog', href: '/blog' },
     { name: 'About', href: '/about' },
     { name: 'FAQ', href: '/faq' },
     { name: 'Contact', href: '/contact' },
@@ -60,6 +61,7 @@ export function Navbar() {
 
   const loggedInLinks = [
     { name: 'Explore', href: '/explore' },
+    { name: 'Blog', href: '/blog' },
     { name: 'Chat Assistant', href: '/chat' },
     { name: 'About', href: '/about' },
     { name: 'FAQ', href: '/faq' },
